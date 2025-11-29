@@ -1,0 +1,30 @@
+body {
+    background: #0A0F1F;
+    color: white;
+    text-align: center;
+    font-family: sans-serif;
+}
+
+img {
+    height: 5rem;
+    width: 5rem;
+    cursor: pointer;
+    margin: 0 1rem;
+    transition: transform 0.2s;
+}
+
+img:hover {
+    transform: scale(1.2);
+}
+
+#consoleMain {
+    max-height: 20rem;
+    overflow-y: auto;
+    margin-top: 1rem;
+}
+
+#console {
+    background: #111;
+    padding: 1rem;
+    border-left: 2px solid #00eaff;
+}
