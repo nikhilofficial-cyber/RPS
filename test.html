@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPS Multiplayer</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        body {
+            background: #0A0F1F;
+            color: white;
+            text-align: center;
+            font-family: sans-serif;
+        }
+
+        img {
+            height: 5rem;
+            width: 5rem;
+            cursor: pointer;
+            margin: 0 1rem;
+            transition: transform 0.2s;
+        }
+
+        img:hover {
+            transform: scale(1.2);
+        }
+
+        #consoleMain {
+            max-height: 20rem;
+            overflow-y: auto;
+            margin-top: 1rem;
+        }
+
+        #console {
+            background: #111;
+            padding: 1rem;
+            border-left: 2px solid #00eaff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Rock Paper Scissors Multiplayer</h1>
+    <p>Select your move:</p>
+
+    <div>
+        <img src="images/rock.png" alt="rock" id="rock">
+        <img src="images/paper.png" alt="paper" id="paper">
+        <img src="images/scissors.png" alt="scissors" id="scissors">
+    </div>
+
+    <div id="console">
+        <h4>Game Console</h4>
+        <div id="consoleMain"></div>
+    </div>
+
+    <script>
+        // ==== Firebase Setup ====
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // ==== Multiplayer Setup ====
+        const roomId = "room123"; // Both players must use same roomId
+        const roomRef = db.ref("rooms/" + roomId);
+
+        // Initialize room if first time
+        roomRef.set({ player1: "", player2: "" });
+
+        // ==== DOM Elements ====
+        const rock = document.getElementById("rock");
+        const paper = document.getElementById("paper");
+        const scissors = document.getElementById("scissors");
+        const consoleMain = document.getElementById("consoleMain");
+
+        // ==== Detect player (player1 or player2) ====
+        let playerId = prompt("Are you Player 1 or Player 2? Type 1 or 2");
+        playerId = playerId === "1" ? "player1" : "player2";
+
+        // ==== Send choice function ====
+        function sendChoice(choice) {
+            roomRef.update({ [playerId]: choice });
+        }
+
+        // ==== Attach click events ====
+        rock.addEventListener("click", () => sendChoice("rock"));
+        paper.addEventListener("click", () => sendChoice("paper"));
+        scissors.addEventListener("click", () => sendChoice("scissors"));
+
+        // ==== Listen for changes in room (real-time) ====
+        roomRef.on("value", (snapshot) => {
+            const data = snapshot.val();
+            const p1 = data.player1;
+            const p2 = data.player2;
+
+            // Update console
+            consoleMain.innerHTML = `
+        <p>Player 1: ${p1 || "-"}</p>
+        <p>Player 2: ${p2 || "-"}</p>
+      `;
+
+            // Check if both players have made a choice
+            if (p1 && p2) {
+                let result = "";
+                if (p1 === p2) result = "Draw!";
+                else if (
+                    (p1 === "rock" && p2 === "scissors") ||
+                    (p1 === "paper" && p2 === "rock") ||
+                    (p1 === "scissors" && p2 === "paper")
+                ) result = "Player 1 Wins!";
+                else result = "Player 2 Wins!";
+
+                alert(result);
+
+                // Reset for next round
+                roomRef.update({ player1: "", player2: "" });
+            }
+        });
+    </script>
+
+</body>
+
+</html>
